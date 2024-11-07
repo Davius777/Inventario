@@ -1,0 +1,683 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="LocalDataModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Empresa">
+          <Key>
+            <PropertyRef Name="IdEmpresa" />
+          </Key>
+          <Property Name="IdEmpresa" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Nombre" Type="varchar" MaxLength="150" />
+          <Property Name="FechaCreacion" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Usuario">
+          <Key>
+            <PropertyRef Name="IdUsuario" />
+          </Key>
+          <Property Name="IdUsuario" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Usuario" Type="varchar" MaxLength="20" />
+          <Property Name="Nombre" Type="varchar" MaxLength="150" />
+          <Property Name="FechaCreacion" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="CatPresentacion">
+          <Key>
+            <PropertyRef Name="IdPresentacion" />
+          </Key>
+          <Property Name="IdPresentacion" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Nombre" Type="varchar" MaxLength="20" />
+          <Property Name="Visible" Type="bit" />
+          <Property Name="FechaCreacion" Type="datetime" />
+        </EntityType>
+        <!--Errores durante la generación:
+advertencia 6002: La tabla o vista 'LocalData.Inventario.Existencia' no tiene definida ninguna clave principal. Se ha inferido la clave y la definición se creado como una vista o tabla de solo lectura.-->
+        <EntityType Name="Existencia">
+          <Key>
+            <PropertyRef Name="IdMedicamento" />
+            <PropertyRef Name="IdPresentacion" />
+            <PropertyRef Name="IdUsuarioCreacion" />
+            <PropertyRef Name="IdEmpresa" />
+          </Key>
+          <Property Name="IdMedicamento" Type="int" Nullable="false" />
+          <Property Name="IdPresentacion" Type="int" Nullable="false" />
+          <Property Name="Entradas" Type="int" />
+          <Property Name="Salidas" Type="int" />
+          <Property Name="SaldoActual" Type="int" StoreGeneratedPattern="Computed" />
+          <Property Name="FechaCreacion" Type="datetime" />
+          <Property Name="FechaModificacion" Type="datetime" />
+          <Property Name="IdUsuarioCreacion" Type="int" Nullable="false" />
+          <Property Name="IdEmpresa" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Medicamento">
+          <Key>
+            <PropertyRef Name="IdMedicamento" />
+          </Key>
+          <Property Name="IdMedicamento" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Nombre" Type="varchar" MaxLength="120" Nullable="false" />
+          <Property Name="IdPresentacion" Type="int" Nullable="false" />
+          <Property Name="Observaciones" Type="varchar" MaxLength="200" />
+          <Property Name="FechaCreacion" Type="datetime" />
+          <Property Name="IdUsuarioCreacion" Type="int" Nullable="false" />
+          <Property Name="IdEmpresa" Type="int" />
+        </EntityType>
+        <EntityType Name="Movimientos">
+          <Key>
+            <PropertyRef Name="IdMovimiento" />
+          </Key>
+          <Property Name="IdMovimiento" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="IdMedicamento" Type="int" Nullable="false" />
+          <Property Name="IdPresentacion" Type="int" Nullable="false" />
+          <Property Name="Cantidad" Type="int" />
+          <Property Name="EsEntrada" Type="bit" />
+          <Property Name="FechaCreacion" Type="datetime" />
+          <Property Name="IdUsuarioCreacion" Type="int" Nullable="false" />
+          <Property Name="IdEmpresa" Type="int" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_InvExistencia_IdEmpresa">
+          <End Role="Empresa" Type="Self.Empresa" Multiplicity="1" />
+          <End Role="Existencia" Type="Self.Existencia" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Empresa">
+              <PropertyRef Name="IdEmpresa" />
+            </Principal>
+            <Dependent Role="Existencia">
+              <PropertyRef Name="IdEmpresa" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvExistencia_IdMedicamento">
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="1" />
+          <End Role="Existencia" Type="Self.Existencia" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Medicamento">
+              <PropertyRef Name="IdMedicamento" />
+            </Principal>
+            <Dependent Role="Existencia">
+              <PropertyRef Name="IdMedicamento" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvExistencia_IdPresentacion">
+          <End Role="CatPresentacion" Type="Self.CatPresentacion" Multiplicity="1" />
+          <End Role="Existencia" Type="Self.Existencia" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CatPresentacion">
+              <PropertyRef Name="IdPresentacion" />
+            </Principal>
+            <Dependent Role="Existencia">
+              <PropertyRef Name="IdPresentacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvExistencia_IdUsuario">
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="1" />
+          <End Role="Existencia" Type="Self.Existencia" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuario">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Existencia">
+              <PropertyRef Name="IdUsuarioCreacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMedicamento_IdEmpresa">
+          <End Role="Empresa" Type="Self.Empresa" Multiplicity="0..1" />
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Empresa">
+              <PropertyRef Name="IdEmpresa" />
+            </Principal>
+            <Dependent Role="Medicamento">
+              <PropertyRef Name="IdEmpresa" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMedicamento_IdPresentacion">
+          <End Role="CatPresentacion" Type="Self.CatPresentacion" Multiplicity="1" />
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CatPresentacion">
+              <PropertyRef Name="IdPresentacion" />
+            </Principal>
+            <Dependent Role="Medicamento">
+              <PropertyRef Name="IdPresentacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMedicamento_IdUsuario">
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="1" />
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuario">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Medicamento">
+              <PropertyRef Name="IdUsuarioCreacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMovimiento_IdEmpresa">
+          <End Role="Empresa" Type="Self.Empresa" Multiplicity="1" />
+          <End Role="Movimientos" Type="Self.Movimientos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Empresa">
+              <PropertyRef Name="IdEmpresa" />
+            </Principal>
+            <Dependent Role="Movimientos">
+              <PropertyRef Name="IdEmpresa" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMovimiento_IdMedicamento">
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="1" />
+          <End Role="Movimientos" Type="Self.Movimientos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Medicamento">
+              <PropertyRef Name="IdMedicamento" />
+            </Principal>
+            <Dependent Role="Movimientos">
+              <PropertyRef Name="IdMedicamento" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMovimiento_IdPresentacion">
+          <End Role="CatPresentacion" Type="Self.CatPresentacion" Multiplicity="1" />
+          <End Role="Movimientos" Type="Self.Movimientos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CatPresentacion">
+              <PropertyRef Name="IdPresentacion" />
+            </Principal>
+            <Dependent Role="Movimientos">
+              <PropertyRef Name="IdPresentacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMovimiento_IdUsuario">
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="1" />
+          <End Role="Movimientos" Type="Self.Movimientos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuario">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Movimientos">
+              <PropertyRef Name="IdUsuarioCreacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Function Name="ActualizaExistencia" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="Inventario">
+          <Parameter Name="IdEmpresa" Type="int" Mode="In" />
+          <Parameter Name="Nombre" Type="varchar" Mode="In" />
+          <Parameter Name="IdPresentacion" Type="int" Mode="In" />
+        </Function>
+        <Function Name="EntradaSalida" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="Inventario">
+          <Parameter Name="EsEntrada" Type="bit" Mode="In" />
+          <Parameter Name="IdEmpresa" Type="int" Mode="In" />
+          <Parameter Name="IdUsuario" Type="int" Mode="In" />
+          <Parameter Name="Nombre" Type="varchar" Mode="In" />
+          <Parameter Name="IdPresentacion" Type="int" Mode="In" />
+          <Parameter Name="Observaciones" Type="varchar" Mode="In" />
+          <Parameter Name="Cantidad" Type="int" Mode="In" />
+        </Function>
+        <EntityContainer Name="LocalDataModelStoreContainer">
+          <EntitySet Name="Empresa" EntityType="Self.Empresa" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Usuario" EntityType="Self.Usuario" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CatPresentacion" EntityType="Self.CatPresentacion" Schema="Inventario" store:Type="Tables" />
+          <EntitySet Name="Medicamento" EntityType="Self.Medicamento" Schema="Inventario" store:Type="Tables" />
+          <EntitySet Name="Movimientos" EntityType="Self.Movimientos" Schema="Inventario" store:Type="Tables" />
+          <EntitySet Name="Existencia" EntityType="Self.Existencia" store:Type="Tables" store:Schema="Inventario">
+            <DefiningQuery>SELECT 
+    [Existencia].[IdMedicamento] AS [IdMedicamento], 
+    [Existencia].[IdPresentacion] AS [IdPresentacion], 
+    [Existencia].[Entradas] AS [Entradas], 
+    [Existencia].[Salidas] AS [Salidas], 
+    [Existencia].[SaldoActual] AS [SaldoActual], 
+    [Existencia].[FechaCreacion] AS [FechaCreacion], 
+    [Existencia].[FechaModificacion] AS [FechaModificacion], 
+    [Existencia].[IdUsuarioCreacion] AS [IdUsuarioCreacion], 
+    [Existencia].[IdEmpresa] AS [IdEmpresa]
+    FROM [Inventario].[Existencia] AS [Existencia]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_InvExistencia_IdEmpresa" Association="Self.FK_InvExistencia_IdEmpresa">
+            <End Role="Empresa" EntitySet="Empresa" />
+            <End Role="Existencia" EntitySet="Existencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvExistencia_IdMedicamento" Association="Self.FK_InvExistencia_IdMedicamento">
+            <End Role="Medicamento" EntitySet="Medicamento" />
+            <End Role="Existencia" EntitySet="Existencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvExistencia_IdPresentacion" Association="Self.FK_InvExistencia_IdPresentacion">
+            <End Role="CatPresentacion" EntitySet="CatPresentacion" />
+            <End Role="Existencia" EntitySet="Existencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvExistencia_IdUsuario" Association="Self.FK_InvExistencia_IdUsuario">
+            <End Role="Usuario" EntitySet="Usuario" />
+            <End Role="Existencia" EntitySet="Existencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMedicamento_IdEmpresa" Association="Self.FK_InvMedicamento_IdEmpresa">
+            <End Role="Empresa" EntitySet="Empresa" />
+            <End Role="Medicamento" EntitySet="Medicamento" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMedicamento_IdPresentacion" Association="Self.FK_InvMedicamento_IdPresentacion">
+            <End Role="CatPresentacion" EntitySet="CatPresentacion" />
+            <End Role="Medicamento" EntitySet="Medicamento" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMedicamento_IdUsuario" Association="Self.FK_InvMedicamento_IdUsuario">
+            <End Role="Usuario" EntitySet="Usuario" />
+            <End Role="Medicamento" EntitySet="Medicamento" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMovimiento_IdEmpresa" Association="Self.FK_InvMovimiento_IdEmpresa">
+            <End Role="Empresa" EntitySet="Empresa" />
+            <End Role="Movimientos" EntitySet="Movimientos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMovimiento_IdMedicamento" Association="Self.FK_InvMovimiento_IdMedicamento">
+            <End Role="Medicamento" EntitySet="Medicamento" />
+            <End Role="Movimientos" EntitySet="Movimientos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMovimiento_IdPresentacion" Association="Self.FK_InvMovimiento_IdPresentacion">
+            <End Role="CatPresentacion" EntitySet="CatPresentacion" />
+            <End Role="Movimientos" EntitySet="Movimientos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMovimiento_IdUsuario" Association="Self.FK_InvMovimiento_IdUsuario">
+            <End Role="Usuario" EntitySet="Usuario" />
+            <End Role="Movimientos" EntitySet="Movimientos" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="LocalDataModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Empresa">
+          <Key>
+            <PropertyRef Name="IdEmpresa" />
+          </Key>
+          <Property Name="IdEmpresa" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Nombre" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="FechaCreacion" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="Existencia" Relationship="Self.FK_InvExistencia_IdEmpresa" FromRole="Empresa" ToRole="Existencia" />
+          <NavigationProperty Name="Medicamento" Relationship="Self.FK_InvMedicamento_IdEmpresa" FromRole="Empresa" ToRole="Medicamento" />
+          <NavigationProperty Name="Movimientos" Relationship="Self.FK_InvMovimiento_IdEmpresa" FromRole="Empresa" ToRole="Movimientos" />
+        </EntityType>
+        <EntityType Name="Usuario">
+          <Key>
+            <PropertyRef Name="IdUsuario" />
+          </Key>
+          <Property Name="IdUsuario" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Usuario1" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Nombre" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="FechaCreacion" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="Existencia" Relationship="Self.FK_InvExistencia_IdUsuario" FromRole="Usuario" ToRole="Existencia" />
+          <NavigationProperty Name="Medicamento" Relationship="Self.FK_InvMedicamento_IdUsuario" FromRole="Usuario" ToRole="Medicamento" />
+          <NavigationProperty Name="Movimientos" Relationship="Self.FK_InvMovimiento_IdUsuario" FromRole="Usuario" ToRole="Movimientos" />
+        </EntityType>
+        <EntityType Name="CatPresentacion">
+          <Key>
+            <PropertyRef Name="IdPresentacion" />
+          </Key>
+          <Property Name="IdPresentacion" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Nombre" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Visible" Type="Boolean" />
+          <Property Name="FechaCreacion" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Existencia" Relationship="Self.FK_InvExistencia_IdPresentacion" FromRole="CatPresentacion" ToRole="Existencia" />
+          <NavigationProperty Name="Medicamento" Relationship="Self.FK_InvMedicamento_IdPresentacion" FromRole="CatPresentacion" ToRole="Medicamento" />
+          <NavigationProperty Name="Movimientos" Relationship="Self.FK_InvMovimiento_IdPresentacion" FromRole="CatPresentacion" ToRole="Movimientos" />
+        </EntityType>
+        <EntityType Name="Medicamento">
+          <Key>
+            <PropertyRef Name="IdMedicamento" />
+          </Key>
+          <Property Name="IdMedicamento" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Nombre" Type="String" MaxLength="120" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="IdPresentacion" Type="Int32" Nullable="false" />
+          <Property Name="Observaciones" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
+          <Property Name="FechaCreacion" Type="DateTime" Precision="3" />
+          <Property Name="IdUsuarioCreacion" Type="Int32" Nullable="false" />
+          <Property Name="IdEmpresa" Type="Int32" />
+          <NavigationProperty Name="Empresa" Relationship="Self.FK_InvMedicamento_IdEmpresa" FromRole="Medicamento" ToRole="Empresa" />
+          <NavigationProperty Name="Usuario" Relationship="Self.FK_InvMedicamento_IdUsuario" FromRole="Medicamento" ToRole="Usuario" />
+          <NavigationProperty Name="CatPresentacion" Relationship="Self.FK_InvMedicamento_IdPresentacion" FromRole="Medicamento" ToRole="CatPresentacion" />
+          <NavigationProperty Name="Existencia" Relationship="Self.FK_InvExistencia_IdMedicamento" FromRole="Medicamento" ToRole="Existencia" />
+          <NavigationProperty Name="Movimientos" Relationship="Self.FK_InvMovimiento_IdMedicamento" FromRole="Medicamento" ToRole="Movimientos" />
+        </EntityType>
+        <EntityType Name="Movimientos">
+          <Key>
+            <PropertyRef Name="IdMovimiento" />
+          </Key>
+          <Property Name="IdMovimiento" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="IdMedicamento" Type="Int32" Nullable="false" />
+          <Property Name="IdPresentacion" Type="Int32" Nullable="false" />
+          <Property Name="Cantidad" Type="Int32" />
+          <Property Name="EsEntrada" Type="Boolean" />
+          <Property Name="FechaCreacion" Type="DateTime" Precision="3" />
+          <Property Name="IdUsuarioCreacion" Type="Int32" Nullable="false" />
+          <Property Name="IdEmpresa" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Empresa" Relationship="Self.FK_InvMovimiento_IdEmpresa" FromRole="Movimientos" ToRole="Empresa" />
+          <NavigationProperty Name="Usuario" Relationship="Self.FK_InvMovimiento_IdUsuario" FromRole="Movimientos" ToRole="Usuario" />
+          <NavigationProperty Name="CatPresentacion" Relationship="Self.FK_InvMovimiento_IdPresentacion" FromRole="Movimientos" ToRole="CatPresentacion" />
+          <NavigationProperty Name="Medicamento" Relationship="Self.FK_InvMovimiento_IdMedicamento" FromRole="Movimientos" ToRole="Medicamento" />
+        </EntityType>
+        <EntityType Name="Existencia">
+          <Key>
+            <PropertyRef Name="IdMedicamento" />
+            <PropertyRef Name="IdPresentacion" />
+            <PropertyRef Name="IdUsuarioCreacion" />
+            <PropertyRef Name="IdEmpresa" />
+          </Key>
+          <Property Name="IdMedicamento" Type="Int32" Nullable="false" />
+          <Property Name="IdPresentacion" Type="Int32" Nullable="false" />
+          <Property Name="Entradas" Type="Int32" />
+          <Property Name="Salidas" Type="Int32" />
+          <Property Name="SaldoActual" Type="Int32" annotation:StoreGeneratedPattern="Computed" />
+          <Property Name="FechaCreacion" Type="DateTime" Precision="3" />
+          <Property Name="FechaModificacion" Type="DateTime" Precision="3" />
+          <Property Name="IdUsuarioCreacion" Type="Int32" Nullable="false" />
+          <Property Name="IdEmpresa" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Empresa" Relationship="Self.FK_InvExistencia_IdEmpresa" FromRole="Existencia" ToRole="Empresa" />
+          <NavigationProperty Name="Usuario" Relationship="Self.FK_InvExistencia_IdUsuario" FromRole="Existencia" ToRole="Usuario" />
+          <NavigationProperty Name="CatPresentacion" Relationship="Self.FK_InvExistencia_IdPresentacion" FromRole="Existencia" ToRole="CatPresentacion" />
+          <NavigationProperty Name="Medicamento" Relationship="Self.FK_InvExistencia_IdMedicamento" FromRole="Existencia" ToRole="Medicamento" />
+        </EntityType>
+        <Association Name="FK_InvExistencia_IdEmpresa">
+          <End Role="Empresa" Type="Self.Empresa" Multiplicity="1" />
+          <End Role="Existencia" Type="Self.Existencia" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Empresa">
+              <PropertyRef Name="IdEmpresa" />
+            </Principal>
+            <Dependent Role="Existencia">
+              <PropertyRef Name="IdEmpresa" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMedicamento_IdEmpresa">
+          <End Role="Empresa" Type="Self.Empresa" Multiplicity="0..1" />
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Empresa">
+              <PropertyRef Name="IdEmpresa" />
+            </Principal>
+            <Dependent Role="Medicamento">
+              <PropertyRef Name="IdEmpresa" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMovimiento_IdEmpresa">
+          <End Role="Empresa" Type="Self.Empresa" Multiplicity="1" />
+          <End Role="Movimientos" Type="Self.Movimientos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Empresa">
+              <PropertyRef Name="IdEmpresa" />
+            </Principal>
+            <Dependent Role="Movimientos">
+              <PropertyRef Name="IdEmpresa" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvExistencia_IdUsuario">
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="1" />
+          <End Role="Existencia" Type="Self.Existencia" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuario">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Existencia">
+              <PropertyRef Name="IdUsuarioCreacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMedicamento_IdUsuario">
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="1" />
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuario">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Medicamento">
+              <PropertyRef Name="IdUsuarioCreacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMovimiento_IdUsuario">
+          <End Role="Usuario" Type="Self.Usuario" Multiplicity="1" />
+          <End Role="Movimientos" Type="Self.Movimientos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Usuario">
+              <PropertyRef Name="IdUsuario" />
+            </Principal>
+            <Dependent Role="Movimientos">
+              <PropertyRef Name="IdUsuarioCreacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvExistencia_IdPresentacion">
+          <End Role="CatPresentacion" Type="Self.CatPresentacion" Multiplicity="1" />
+          <End Role="Existencia" Type="Self.Existencia" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CatPresentacion">
+              <PropertyRef Name="IdPresentacion" />
+            </Principal>
+            <Dependent Role="Existencia">
+              <PropertyRef Name="IdPresentacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMedicamento_IdPresentacion">
+          <End Role="CatPresentacion" Type="Self.CatPresentacion" Multiplicity="1" />
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CatPresentacion">
+              <PropertyRef Name="IdPresentacion" />
+            </Principal>
+            <Dependent Role="Medicamento">
+              <PropertyRef Name="IdPresentacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMovimiento_IdPresentacion">
+          <End Role="CatPresentacion" Type="Self.CatPresentacion" Multiplicity="1" />
+          <End Role="Movimientos" Type="Self.Movimientos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CatPresentacion">
+              <PropertyRef Name="IdPresentacion" />
+            </Principal>
+            <Dependent Role="Movimientos">
+              <PropertyRef Name="IdPresentacion" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvExistencia_IdMedicamento">
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="1" />
+          <End Role="Existencia" Type="Self.Existencia" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Medicamento">
+              <PropertyRef Name="IdMedicamento" />
+            </Principal>
+            <Dependent Role="Existencia">
+              <PropertyRef Name="IdMedicamento" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_InvMovimiento_IdMedicamento">
+          <End Role="Medicamento" Type="Self.Medicamento" Multiplicity="1" />
+          <End Role="Movimientos" Type="Self.Movimientos" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Medicamento">
+              <PropertyRef Name="IdMedicamento" />
+            </Principal>
+            <Dependent Role="Movimientos">
+              <PropertyRef Name="IdMedicamento" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="LocalDataEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Empresa" EntityType="Self.Empresa" />
+          <EntitySet Name="Usuario" EntityType="Self.Usuario" />
+          <EntitySet Name="CatPresentacion" EntityType="Self.CatPresentacion" />
+          <EntitySet Name="Medicamento" EntityType="Self.Medicamento" />
+          <EntitySet Name="Movimientos" EntityType="Self.Movimientos" />
+          <EntitySet Name="Existencia" EntityType="Self.Existencia" />
+          <AssociationSet Name="FK_InvExistencia_IdEmpresa" Association="Self.FK_InvExistencia_IdEmpresa">
+            <End Role="Empresa" EntitySet="Empresa" />
+            <End Role="Existencia" EntitySet="Existencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMedicamento_IdEmpresa" Association="Self.FK_InvMedicamento_IdEmpresa">
+            <End Role="Empresa" EntitySet="Empresa" />
+            <End Role="Medicamento" EntitySet="Medicamento" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMovimiento_IdEmpresa" Association="Self.FK_InvMovimiento_IdEmpresa">
+            <End Role="Empresa" EntitySet="Empresa" />
+            <End Role="Movimientos" EntitySet="Movimientos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvExistencia_IdUsuario" Association="Self.FK_InvExistencia_IdUsuario">
+            <End Role="Usuario" EntitySet="Usuario" />
+            <End Role="Existencia" EntitySet="Existencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMedicamento_IdUsuario" Association="Self.FK_InvMedicamento_IdUsuario">
+            <End Role="Usuario" EntitySet="Usuario" />
+            <End Role="Medicamento" EntitySet="Medicamento" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMovimiento_IdUsuario" Association="Self.FK_InvMovimiento_IdUsuario">
+            <End Role="Usuario" EntitySet="Usuario" />
+            <End Role="Movimientos" EntitySet="Movimientos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvExistencia_IdPresentacion" Association="Self.FK_InvExistencia_IdPresentacion">
+            <End Role="CatPresentacion" EntitySet="CatPresentacion" />
+            <End Role="Existencia" EntitySet="Existencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMedicamento_IdPresentacion" Association="Self.FK_InvMedicamento_IdPresentacion">
+            <End Role="CatPresentacion" EntitySet="CatPresentacion" />
+            <End Role="Medicamento" EntitySet="Medicamento" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMovimiento_IdPresentacion" Association="Self.FK_InvMovimiento_IdPresentacion">
+            <End Role="CatPresentacion" EntitySet="CatPresentacion" />
+            <End Role="Movimientos" EntitySet="Movimientos" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvExistencia_IdMedicamento" Association="Self.FK_InvExistencia_IdMedicamento">
+            <End Role="Medicamento" EntitySet="Medicamento" />
+            <End Role="Existencia" EntitySet="Existencia" />
+          </AssociationSet>
+          <AssociationSet Name="FK_InvMovimiento_IdMedicamento" Association="Self.FK_InvMovimiento_IdMedicamento">
+            <End Role="Medicamento" EntitySet="Medicamento" />
+            <End Role="Movimientos" EntitySet="Movimientos" />
+          </AssociationSet>
+          <FunctionImport Name="ActualizaExistencia">
+            <Parameter Name="IdEmpresa" Mode="In" Type="Int32" />
+            <Parameter Name="Nombre" Mode="In" Type="String" />
+            <Parameter Name="IdPresentacion" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="EntradaSalida">
+            <Parameter Name="EsEntrada" Mode="In" Type="Boolean" />
+            <Parameter Name="IdEmpresa" Mode="In" Type="Int32" />
+            <Parameter Name="IdUsuario" Mode="In" Type="Int32" />
+            <Parameter Name="Nombre" Mode="In" Type="String" />
+            <Parameter Name="IdPresentacion" Mode="In" Type="Int32" />
+            <Parameter Name="Observaciones" Mode="In" Type="String" />
+            <Parameter Name="Cantidad" Mode="In" Type="Int32" />
+          </FunctionImport>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="LocalDataModelStoreContainer" CdmEntityContainer="LocalDataEntities">
+          <EntitySetMapping Name="Empresa">
+            <EntityTypeMapping TypeName="LocalDataModel.Empresa">
+              <MappingFragment StoreEntitySet="Empresa">
+                <ScalarProperty Name="IdEmpresa" ColumnName="IdEmpresa" />
+                <ScalarProperty Name="Nombre" ColumnName="Nombre" />
+                <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Usuario">
+            <EntityTypeMapping TypeName="LocalDataModel.Usuario">
+              <MappingFragment StoreEntitySet="Usuario">
+                <ScalarProperty Name="IdUsuario" ColumnName="IdUsuario" />
+                <ScalarProperty Name="Usuario1" ColumnName="Usuario" />
+                <ScalarProperty Name="Nombre" ColumnName="Nombre" />
+                <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CatPresentacion">
+            <EntityTypeMapping TypeName="LocalDataModel.CatPresentacion">
+              <MappingFragment StoreEntitySet="CatPresentacion">
+                <ScalarProperty Name="IdPresentacion" ColumnName="IdPresentacion" />
+                <ScalarProperty Name="Nombre" ColumnName="Nombre" />
+                <ScalarProperty Name="Visible" ColumnName="Visible" />
+                <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Medicamento">
+            <EntityTypeMapping TypeName="LocalDataModel.Medicamento">
+              <MappingFragment StoreEntitySet="Medicamento">
+                <ScalarProperty Name="IdMedicamento" ColumnName="IdMedicamento" />
+                <ScalarProperty Name="Nombre" ColumnName="Nombre" />
+                <ScalarProperty Name="IdPresentacion" ColumnName="IdPresentacion" />
+                <ScalarProperty Name="Observaciones" ColumnName="Observaciones" />
+                <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
+                <ScalarProperty Name="IdUsuarioCreacion" ColumnName="IdUsuarioCreacion" />
+                <ScalarProperty Name="IdEmpresa" ColumnName="IdEmpresa" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Movimientos">
+            <EntityTypeMapping TypeName="LocalDataModel.Movimientos">
+              <MappingFragment StoreEntitySet="Movimientos">
+                <ScalarProperty Name="IdMovimiento" ColumnName="IdMovimiento" />
+                <ScalarProperty Name="IdMedicamento" ColumnName="IdMedicamento" />
+                <ScalarProperty Name="IdPresentacion" ColumnName="IdPresentacion" />
+                <ScalarProperty Name="Cantidad" ColumnName="Cantidad" />
+                <ScalarProperty Name="EsEntrada" ColumnName="EsEntrada" />
+                <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
+                <ScalarProperty Name="IdUsuarioCreacion" ColumnName="IdUsuarioCreacion" />
+                <ScalarProperty Name="IdEmpresa" ColumnName="IdEmpresa" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Existencia">
+            <EntityTypeMapping TypeName="LocalDataModel.Existencia">
+              <MappingFragment StoreEntitySet="Existencia">
+                <ScalarProperty Name="IdMedicamento" ColumnName="IdMedicamento" />
+                <ScalarProperty Name="IdPresentacion" ColumnName="IdPresentacion" />
+                <ScalarProperty Name="Entradas" ColumnName="Entradas" />
+                <ScalarProperty Name="Salidas" ColumnName="Salidas" />
+                <ScalarProperty Name="SaldoActual" ColumnName="SaldoActual" />
+                <ScalarProperty Name="FechaCreacion" ColumnName="FechaCreacion" />
+                <ScalarProperty Name="FechaModificacion" ColumnName="FechaModificacion" />
+                <ScalarProperty Name="IdUsuarioCreacion" ColumnName="IdUsuarioCreacion" />
+                <ScalarProperty Name="IdEmpresa" ColumnName="IdEmpresa" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="ActualizaExistencia" FunctionName="LocalDataModel.Store.ActualizaExistencia" />
+          <FunctionImportMapping FunctionImportName="EntradaSalida" FunctionName="LocalDataModel.Store.EntradaSalida" />
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Ninguno" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

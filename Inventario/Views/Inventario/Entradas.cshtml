@@ -1,0 +1,172 @@
+﻿
+@{
+    ViewBag.Title = "Entradas";
+}
+@{ }
+<section class="container py-4">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-1">
+                <i class="fa fa-arrow-circle-down fa-4x" aria-hidden="true"></i>
+            </div>
+            <div class="col-sm-1 align-content-md-center">
+                <h1 id="title">@ViewBag.Title</h1>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="container">
+    <div class="card card-group" style="height:20em">
+        <div class="card-body">
+            <form class="needs-validation" novalidate>
+                <div class="row">
+                    <div class="col-4 mb-4">
+                        <label for="txtDescripcion" class="form-label">Nombre</label>
+                        <input id="txtDescripcion" type="text" class="form-text form-control text-uppercase" tabindex="1" required />
+                        <div class="invalid-feedback">
+                            Ingrese el nombre del medicamento
+                        </div>
+                    </div>
+                    <div class="col-4 mb-4">
+                        <label for="txtPresentacion" class="form-label">Presentación</label>
+                        <select id="txtPresentacion" class="form-select" aria-label="Seleccione de tipo de presentación" tabindex="2" required>
+                        </select>
+                        <div class="invalid-feedback">
+                            Seleccione un tipo de presentación
+                        </div>
+                    </div>
+                    <div class="col-4 mb-3" style="text-align-last:end; padding-right:6%;">
+                        <label for="btnGuardar" class="form-label">&nbsp;</label><br />
+                        <button id="btnGuardar" class="btn btn-success" tabindex="5">Guardar</button>
+                    </div>
+
+                    <div class="col-4 mb-3">
+                        <label for="txtCantidad" class="form-label">Cantidad</label>
+                        <input id="txtCantidad" type="number" class="form-text form-control" tabindex="3" required />
+                        <div class="invalid-feedback">
+                            Ingrese una cantidad mayor a cero.
+                        </div>
+                    </div>
+                    <div class="col-8">
+                        <label for="txtDetalle" class="form-label">Detalle/Observaciones</label>
+                        <textarea id="txtDetalle" type="text" class="form-text form-control" rows="2" tabindex="4" novalidate style="max-width:92%; resize:none"></textarea>
+                        <div class="valid-feedback">
+                            Los detalles son opcionales.
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+@section scripts {
+    
+    <script type="text/javascript">
+        var o = {
+            elem: {
+                descripcion: $("#txtDescripcion"),
+                presentacion: $("#txtPresentacion"),
+                cantidad: $("#txtCantidad"),
+                detalle: $("#txtDetalle")
+            }
+        }
+        $(function () {
+            ObtenCatalogoPresentacion();
+            $("#btnGuardar").off().on('click',function (e) {
+                const forms = document.querySelectorAll('.needs-validation');
+                Array.from(forms).forEach(function (form) {
+                    form.addEventListener('submit', ListenerEventSubmit, false);
+                });
+            });
+            $("#txtCantidad").on('change', function () {
+                $("#txtCantidad").val(Math.abs($("#txtCantidad").val()));
+            });
+            $("#txtDescripcion").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("CatMedicamentos", "Inventario")',
+                        cache: false,
+                        data: {
+                            search: request.term
+                        },
+                        success: function (result) {
+                            response($.map(result.Data, function (item) {
+                                return {
+                                    label: item.Nombre
+                                }
+                            }));
+                        }
+                    })
+                }
+            })
+        });
+
+        function ListenerEventSubmit(event) {
+            let datosValidos = true;
+            event.preventDefault();
+            event.stopPropagation();
+            if (!this.checkValidity()) {
+                datosValidos = false;
+            };
+            if (datosValidos) {
+                GuardaMedicamento(this);
+            }
+            else
+                this.classList.add('was-validated');
+        }
+
+        function ObtenCatalogoPresentacion() {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CatPresentacion", "Inventario")',
+                cache: false,
+                success: function (result) {
+                    if (!result.Error) {
+                        let $ls = $("#txtPresentacion");
+                        $ls.empty();
+                        $ls.append($("<option selected disabled></option>").val("").text("Selecciona..."));
+                        if (result.Data.length > 0) {
+                            $.each(result.Data, function () {
+                                $ls.append($("<option/>").val(this.Id).text(this.Nombre));
+                            });
+                        }
+                        else
+                            toastr.error("No existe catalogo de presentaciones", "Error");
+                    }
+                    else
+                        toastr.error(result.Mensaje, "Error");
+                }
+            });
+        }
+
+        function GuardaMedicamento(form) {
+            let medicamentoObj = {
+                Nombre: o.elem.descripcion.val().toUpperCase(),
+                IdPresentacion: o.elem.presentacion.val(),
+                Cantidad: o.elem.cantidad.val(),
+                Observaciones: o.elem.detalle.val()
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Guardar", "Inventario")',
+                data: { medicamento: medicamentoObj },
+                cache: false,
+                success: function (result) {
+                    if (!result.Error) {
+                        $("form").removeClass("was-validated");
+                        $(".form-control").val("");
+                        $("#txtPresentacion").val("");
+                        form.removeEventListener('submit', ListenerEventSubmit, false);
+                        toastr.success(result.Mensaje, "Exito");
+                    }
+                    else
+                        toastr.error(result.Mensaje, "Error");
+                }
+            });
+        }
+        function ValidaDatos() {
+            return o.elem.descripcion.val() != "" && o.elem.presentacion.val() != "" && o.elem.cantidad.val() != "" && o.elem.detalle.val() != "";
+        }
+    </script>
+}

@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Control de Inventario</title>
+
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/fontawesome")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body style="background-color:lightgray;">
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
+        <div class="container">
+            @Html.ActionLink("Control de Inventario", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Alternar navegación" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li>@Html.ActionLink("Inventario", "Stock", "Inventario", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Entradas", "Entradas", "Inventario", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Salidas", "Salidas", "Inventario", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Carga masiva", "CMasiva", "Inventario", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Reportes
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="#">@Html.ActionLink("Reporte de inventario", "Inventario", "Reporte", new { area = "" }, new { @class = "nav-link" })</a></li>
+                            <li><a class="dropdown-item" href="#">@Html.ActionLink("Reporte de movimientos", "Movimiento", "Reporte", new { area = "" }, new { @class = "nav-link" })</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - ASP.NET</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/tools")
+    @RenderSection("scripts", required: false)
+
+    <script type="text/javascript">
+        $(function () {
+            console.log("Bootstrap: " + bootstrap.Tooltip.VERSION);
+            console.log("jQuery:    " + jQuery().jquery);
+        });
+    </script>
+</body>
+</html>

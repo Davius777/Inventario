@@ -1,0 +1,244 @@
+﻿
+@{
+    ViewBag.Title = "Carga Masiva";
+}
+
+<section class="container py-4">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-1">
+                <i class="fa fa-list-alt fa-4x" aria-hidden="true"></i>
+            </div>
+            <div class="col-sm-3 align-content-md-center">
+                <h1 id="title">@ViewBag.Title</h1>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="container">
+    <div class="card card-group">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12 mb-5" style="display:flex; justify-content:flex-end;">
+                    <button id="btnPlantilla" class="btn btn-success" style="margin-right:2%; width:18%;">
+                        <span><i class="fa fa-download fa-1x" aria-hidden="true"></i></span>
+                        Descargar plantilla</button>
+                    <button id="btnCargar" class="btn btn-success btn-submit" type="submit" style="margin-right:2%; width:18%;">
+                        <span><i class="fa fa-upload fa-1x" aria-hidden="true"></i></span>
+                    Cargar excel</button>
+                    <button id="btnLimpiar" class="btn btn-secondary disabled" style="margin-right:2%; width:18%;">
+                        <span><i class="fa fa-trash fa-1x" aria-hidden="true"></i></span>
+                    Limpiar</button>
+                    <button id="btnGuardar" class="btn btn-success disabled" style="margin-right:2%; width:18%;">
+                        <span><i class="fa fa-floppy-o" fa-1x" aria-hidden="true"></i></span>
+                    Cargar a Inventario</button>
+                    <form enctype="multipart/form-data" style="margin-right:2%">
+                        <input class="input-group" type="file" id="excelFile" name="Subir archivo" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+                    </form>
+                </div>
+                <div id="dvTabla" class="col-12 mb-5">
+                    <hr />
+                    <table id="tblMedicamentosVP" class="display">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Presentación</th>
+                                <th>Cantidad</th>
+                                <th>Estatus</th>
+                                <th>Mensaje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<iframe style="display:none" id="IDescarga" src=""></iframe>
+@section scripts {
+    <script type="text/javascript">
+        $(function () {
+            LlenarTabla([], true);
+            $("#btnPlantilla").on('click', function (e) {
+                IDescarga.src = "../Plantillas/CargaMasivaMedicamentos_Plantilla.xlsx";
+            });
+            $('#btnCargar').on('click', function (e) {
+                e.preventDefault();
+                $("#excelFile").trigger('click');
+                $("#btnGuardar").addClass('disabled');
+            });
+            $("#btnLimpiar").on('click', function () {
+                $('#excelFile').val("");
+                $('#btnCargar').removeClass('disabled');
+                $('#btnLimpiar').addClass('disabled');
+                $("#btnGuardar").addClass('disabled');
+                LlenarTabla([], true);
+            });
+            $("#btnGuardar").on('click', function () {
+                GuardarMedicamentos();
+            });
+            $('#excelFile').on('change', function ({ target }) {
+                let file = target.files[0];
+                let allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+                let fileType = file.type;
+
+                console.log("target", file);
+
+                if (file && allowedTypes.includes(fileType)) {
+                    let fileName = file.name;
+                    if (fileName.length >= 12) {
+                        let splitText = fileName.split('.');
+                        console.log("splitText", splitText);
+                        fileName = splitText[0].substring(0, 12) + '..' + splitText[1];
+                    }
+                    CargarExcel(fileName);
+                } else {
+                    toastr.error("El tipo de archivo no esta permitido", "Error");
+                    return false;
+                }
+
+            });
+        });
+
+        function CargarExcel(name) {
+            var excelFile = document.getElementById('excelFile');
+            formData = new FormData();
+            if (excelFile.files.length > 0) {
+                for (var i = 0; i < excelFile.files.length; i++) {
+                    formData.append('file-' + i, excelFile.files[i]);
+                }
+            }
+            $.ajax({
+                xhr: function () {
+                    let xhr = new XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", ({ loaded, total }) => {
+                        console.log("loaded, total", loaded, total);
+                        let fileLoaded = Math.floor((loaded / total) * 100);
+                        let fileTotal = Math.floor(total / 1000);
+
+                        let fileSize;
+
+                        fileSize = (fileTotal < 1024) ? fileSize = fileTotal + 'KB' : fileSize = (loaded / (1024 * 1024)).toFixed(2) + 'MB';
+                        if (loaded == total) {
+                            $("#btnCargar").addClass('disabled');
+                            $("#btnLimpiar").removeClass('disabled');
+                        }
+                        //let progressHtml = '<div class="row"><div class="details"><span class="name"> ${name}</span><span>- </span></div><div class="progress-bar"><div class="progress--1" style="width:${fileLoaded}%"></div></div></div>'
+                        //progressHtml += '<div class="upload-status"><span class="uploading-status">Uploading</span><span class="percentage">${fileLoaded}%</span></div></div>'
+                        //progressHtml += '<button class="btn btn-danger btn-cancel">Cancelar</button>'
+                        //$('.progress-area').html(progressHtml);
+                        //if (loaded == total) {
+                        //    $('.progress-area').html('');
+                        //    let uploadedHTML = '<div class="row"> <div class="uploaded"><div class="details"><span class="name"> ${name}</span><p>Cargado.<span class="size">${fileSize}</span></p></div></div></div>'
+                        //    uploadedHTML += '<button class="btn btn-secondary">Limpiar</button>'
+                        //    $(".uploaded-area").html(uploadedHTML);
+                        //}
+                    }, false);
+                    return xhr;
+                },
+                type: "POST",
+                url: '@Url.Action("ValidarPlantilla", "Inventario")',
+                data: formData,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                contentType: false,
+                processData: false,
+                error: function () {
+                    toastr.error("", "Error");
+                },
+                success: function (result) {
+                    if (!result.Error) {
+                        toastr.info("Vista previa disponible", "Exito");
+                        LlenarTabla(result.Data, false);
+                        $('#btnCargar').addClass('disabled');
+                    }
+                    else
+                        toastr.error(result.Mensaje, "Error");
+                }
+
+            })
+
+        }
+
+        function DescargarPlantilla() {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DescargarPlantilla", "Inventario")',
+                cache: false,
+                success: function (result) {
+                    if (!result.Error) {
+                        toastr.success(result.Mensaje, "Exito");
+                    }
+                    else
+                        toastr.error(result.Mensaje, "Error");
+                }
+            });
+        }
+        function LlenarTabla(data, llenar) {
+            $("#tblMedicamentosVP").dataTable().fnDestroy();
+            let isValid = !llenar;
+            let dtMedicamento = $("#tblMedicamentosVP").dataTable({
+                aaData: data,
+                autoWidth: true,
+                ordering: false,
+                aoColumns: [
+                    { mData: 'Nombre', "orderable": false, width: '40%' },
+                    { mData: 'Presentacion', "orderable": false, width: '15%', "className": "dt-center"  },
+                    { mData: 'Cantidad', "orderable": false, width: '10%', "className": "dt-center" },
+                    {
+                        mData: 'Estatus', "orderable": false, width: '5%', "className": "dt-center estatusTb", "render": function (data) {
+                            isValid = isValid && data;
+                            return data ? '<i class="fa fa-check-circle fa-1x" aria-hidden="true"></i>' :
+                            '<i class="fa fa fa-times-circle fa-1x" aria-hidden="true"></i>';
+                        }
+                    },
+                    { mData: 'Mensaje', "orderable": false, width: '30%' }
+                ],
+                language: {
+                    "decimal": "",
+                    "emptyTable": "Vista previa",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ medicametos",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 medicamentos",
+                    "infoFiltered": "(filtrando desde _MAX_ medicamentos totales",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ medicamentos",
+                    "loadingRecords": "Cargando...",
+                    "processing": "",
+                    "search": "Buscar:",
+                    "zeroRecords": "No se encontraron registros",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Último",
+                        "previous": "Anterior",
+                        "next": "Siguiente"
+                    }
+                }
+            });
+            if (data.length > 0)
+                jQuery("html, body").animate({ scrollTop: $('#dvTabla').get(0).scrollHeight - 270 }, 1000);
+            if (isValid)
+                $("#btnGuardar").removeClass('disabled');
+        }
+
+        function GuardarMedicamentos() {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GuardarLista", "Inventario")',
+                data: { medicamentos: $("#tblMedicamentosVP").DataTable().rows().data().toArray() },
+                cache: false,
+                success: function (result) {
+                    if (!result.Error) {
+                        toastr.success(result.Mensaje, "Exito");
+                        $("#btnLimpiar").trigger("click");
+                    }
+                    else
+                        toastr.error(result.Mensaje, "Error");
+                }
+            });
+            
+        }
+    </script>
+}

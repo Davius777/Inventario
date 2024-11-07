@@ -1,0 +1,94 @@
+﻿
+@{
+    ViewBag.Title = "Stock";
+}
+<section class="container py-4">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-1">
+                <i class="fa fa-list-alt fa-4x" aria-hidden="true"></i>
+            </div>
+            <div class="col-sm-1 align-content-md-center">
+                <h1 id="title">@ViewBag.Title</h1>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="container">
+    <div class="card card-group">
+        <div class="card-body">
+            <p id="load">
+                Cargando...
+                <i class="fa fa-spinner fa-spin fa-1x fa-fw" aria-hidden="true"></i>
+            </p>
+            <div id="dvTabla" class="col-12">
+                <table id="tblMedicamentos" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Presentación</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+@section scripts {
+    <script type="text/javascript">
+        $(function () {
+            $("#dvTabla").hide();
+            ObtenMedicamentos();
+        });
+        function ObtenMedicamentos() {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Listar", "Inventario")',
+                cache: false,
+                success: function (result) {
+                    if (!result.Error) {
+                        LlenarTabla(result.Data);
+                    }
+                    else
+                        toastr.error(result.Mensaje, "Error");
+                }
+            });
+        }
+        function LlenarTabla(data) {
+            let dtMedicamento = $("#tblMedicamentos").dataTable({
+                aaData: data,
+                autoWidth: true,
+                aoColumns: [
+                    { mData: 'Nombre', "orderable": true },
+                    { mData: 'Presentacion', "orderable": true },
+                    { mData: 'Cantidad', "orderable": false }
+                ],
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay medicamentos disponibles",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ medicametos",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 medicamentos",
+                    "infoFiltered": "(filtrando desde _MAX_ medicamentos totales",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ medicamentos",
+                    "loadingRecords": "Cargando...",
+                    "processing": "",
+                    "search": "Buscar:",
+                    "zeroRecords": "No se encontraron registros",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Último",
+                        "previous": "Anterior",
+                        "next": "Siguiente"
+                    }
+                }
+            });
+            $("#load").hide();
+            $("#dvTabla").show();
+        }
+    </script>
+}
